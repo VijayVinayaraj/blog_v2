@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Create a custom component in ESPIDF</title>
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Create a custom component in ESPIDF</h1>
+<div id="outline-container-org9ac0cfa" class="outline-2">
+<h2 id="org9ac0cfa">How do you create a custom component in ESPIDF?</h2>
+<div class="outline-text-2" id="text-org9ac0cfa">
+<p>
+The build system documentation is huge and understanding how to create a custom component to modularize your project is daunting task.
+So I will explain a beginner friendly way to create custom component.
+</p>
+
+<pre class="example">
+- myProject/
+             - CMakeLists.txt
+             - sdkconfig
+             - components/ - component1/ - CMakeLists.txt
+                                         - Kconfig
+                                         - src1.c
+                           - component2/ - CMakeLists.txt
+                                         - Kconfig
+                                         - src1.c
+                                         - include/ - component2.h
+             - main/       - CMakeLists.txt
+                           - main.c
+             - build/
+</pre>
+<p>
+This is structure of the example project
+</p>
+
+<p>
+myProject/CMakeList.txt
+</p>
+<pre class="example">
+# For more information about build system see
+# https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html
+# The following five lines of boilerplate have to be in your project's
+# CMakeLists in this exact order for cmake to work correctly
+cmake_minimum_required(VERSION 3.16)
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(main)
+</pre>
+<p>
+This is contents of example project from ESPIDF github page.This is minimum requirement to build your project with idf.py.
+There is details description of these lines in <a href="https://docs.espressif.com/projects/esp-idf/en/v5.1.2/esp32/api-guides/build-system.html#minimal-example-cmakelists">minimum example CMakeLists</a>.
+</p>
+
+<p>
+components/component1/CMakeLists.txt
+</p>
+<pre class="example">
+idf_component_register(SRCS "src1.c"
+                        INCLUDE_DIRS ".")
+</pre>
+<p>
+This is the contents of component1 CMakeLists. These SRCS variable is used to add all the .c files in the directory/component and the INCLUDE_DIRS variable is used to add the include folder which will import the .h files.
+</p>
+
+<p>
+components/component2/CMakeLists.txt
+</p>
+<pre class="example">
+idf_component_register(SRCS "src2.c"
+                        INCLUDE_DIRS "include")
+
+
+</pre>
+<p>
+This is the contents of component2 CMakeLists. I just wanted to show that you can include .h files in this format as well.
+</p>
+
+<p>
+Using idf_component_register to register the component will give the cmake build system to compile and link your component to firmware.
+</p>
+</div>
+
+<div id="outline-container-orgccf0666" class="outline-3">
+<h3 id="orgccf0666">If you want to use custom folder</h3>
+<div class="outline-text-3" id="text-orgccf0666">
+<p>
+By default ESPIDF will look for components in myProject/components folder. If you want to declare your components in another folder for example: myProject/modules.
+you can set it using this variable EXTRA_COMPONENT_DIRS.
+</p>
+
+<pre class="example">
+(set EXTRA_COMPONENT_DIRS "./modules")
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2024-01-28 Sun 00:00</p>
+</div>
+</body>
+</html>

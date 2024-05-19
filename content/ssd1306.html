@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Interfacing SSD1306 128*64 Led Display With ESP32 in EspIDF</title>
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Interfacing SSD1306 128*64 Led Display With ESP32 in EspIDF</h1>
+
+<div id="outline-container-orgf4a7ff4" class="outline-2">
+<h2 id="orgf4a7ff4">Introduction</h2>
+<div class="outline-text-2" id="text-orgf4a7ff4">
+<p>
+Hey guys just want to show you how to interface with a SSD1306 led display with esp32 in ESPIDF. The official documenation might overwhelm the average programmer.
+I have used the oled display with the <a href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306</a> library. I want to try out ESPIDF and had a oled display lying around. Lets get to it without boring you.
+I have used the minimum possible code you interface with ssd1306 if you want to go extreme I have given a great repo for you go through.
+</p>
+
+
+<p>
+I will link the datasheet of <a href="https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf">SSD1306</a> here.
+There is github repo that has detailed code for interfacing with oled. I will link it <a href="https://github.com/nopnop2002/esp-idf-ssd1306/blob/master/TextDemo/main/main.c">here</a>. 
+I am using ESPIDF v5. I have setup the project with platformio and vscode.
+I won't be explaining how to I2C work there are great articles on that which can you be found by a google search.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org836a69b" class="outline-2">
+<h2 id="org836a69b">Intialization</h2>
+<div class="outline-text-2" id="text-org836a69b">
+
+<div id="orgbd08a1a" class="figure">
+<p><img src="../assets/ssd1306-block-diagram.png" alt="ssd1306-block-diagram.png" width="400" height="400" />
+</p>
+<p><span class="figure-number">Figure 1: </span>A black cat stalking a spider</p>
+</div>
+
+<p>
+There is the block diagram shown on the last page of the datasheet. We have to intialize ssd1306 according to the block diagram.
+For making it easy for you I have declared all the registers of ssd1306.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_I2C_ADDRESS</span>   0x3C
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Control byte</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CONTROL_BYTE_CMD_SINGLE</span>    0x80
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CONTROL_BYTE_CMD_STREAM</span>    0x00
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CONTROL_BYTE_DATA_STREAM</span>   0x40
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Fundamental commands (pg.28)</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_CONTRAST</span>           0x81   
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_DISPLAY_RAM</span>            0xA4
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_DISPLAY_ALLON</span>          0xA5
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_DISPLAY_NORMAL</span>         0xA6
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_DISPLAY_INVERTED</span>       0xA7
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_DISPLAY_OFF</span>            0xAE
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_DISPLAY_ON</span>             0xAF
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Addressing Command Table (pg.30)</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_MEMORY_ADDR_MODE</span>   0x20   
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_COLUMN_RANGE</span>       0x21    
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_PAGE_RANGE</span>         0x22    
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Hardware Config (pg.31)</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_DISPLAY_START_LINE</span> 0x40
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_SEGMENT_REMAP</span>      0xA1    
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_MUX_RATIO</span>          0xA8   
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_COM_SCAN_MODE</span>      0xC8    
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_DISPLAY_OFFSET</span>     0xD3    
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_COM_PIN_MAP</span>        0xDA   
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_NOP</span>                    0xE3    
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Timing and Driving Scheme (pg.32)</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_DISPLAY_CLK_DIV</span>    0xD5    
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_PRECHARGE</span>          0xD9    
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_VCOMH_DESELCT</span>      0xDB    
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Charge Pump (pg.62)</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">OLED_CMD_SET_CHARGE_PUMP</span>        0x8D    
+
+</pre>
+</div>
+
+<p>
+You can copy this registers to use in your project. These registers are taken from the datasheet.
+</p>
+</div>
+
+<div id="outline-container-orgb4c1e69" class="outline-3">
+<h3 id="orgb4c1e69">Initializing I2C</h3>
+<div class="outline-text-3" id="text-orgb4c1e69">
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">i2c_master_init</span>()
+{
+        <span style="font-weight: bold; text-decoration: underline;">i2c_config_t</span> <span style="font-weight: bold; font-style: italic;">i2c_config</span> = {
+                .mode = I2C_MODE_MASTER,
+                .sda_io_num = SDA_PIN,
+                .scl_io_num = SCL_PIN,
+                .sda_pullup_en = GPIO_PULLUP_ENABLE,
+                .scl_pullup_en = GPIO_PULLUP_ENABLE,
+                .master.clk_speed = 1000000
+        };
+        i2c_param_config(I2C_NUM_0, &amp;i2c_config);
+        i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-org2953192" class="outline-3">
+<h3 id="org2953192">Initializing SSD1306</h3>
+<div class="outline-text-3" id="text-org2953192">
+<p>
+Init function is used to intialize all the registers according to the datasheet block diagram.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">ssd1306_init</span>() {
+        <span style="font-weight: bold; text-decoration: underline;">esp_err_t</span> <span style="font-weight: bold; font-style: italic;">espRc</span>;
+
+        <span style="font-weight: bold; text-decoration: underline;">i2c_cmd_handle_t</span> <span style="font-weight: bold; font-style: italic;">cmd</span> = i2c_cmd_link_create();
+
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS &lt;&lt; 1) | I2C_MASTER_WRITE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CONTROL_BYTE_CMD_STREAM,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_DISPLAY_OFF,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_MUX_RATIO,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x3F,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_DISPLAY_OFFSET,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x00,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_DISPLAY_START_LINE,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_SEGMENT_REMAP,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_COM_SCAN_MODE,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_COM_PIN_MAP,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x12,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_CONTRAST,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x7F,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_DISPLAY_RAM,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_DISPLAY_NORMAL,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_DISPLAY_CLK_DIV,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x80,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_CHARGE_PUMP,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x14,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_PRECHARGE,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x22,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_VCOMH_DESELCT,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x30,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_SET_MEMORY_ADDR_MODE,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x00,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write_byte(cmd,OLED_CMD_DISPLAY_ON,<span style="font-weight: bold; text-decoration: underline;">true</span>);
+    i2c_master_stop(cmd);
+
+        espRc =i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+        <span style="font-weight: bold;">if</span> (espRc == ESP_OK) {
+                ESP_LOGI(tag, <span style="font-style: italic;">"OLED configured successfully"</span>);
+        } <span style="font-weight: bold;">else</span> {
+                ESP_LOGE(tag, <span style="font-style: italic;">"OLED configuration failed. code: 0x%.2X"</span>, espRc);
+        }
+        i2c_cmd_link_delete(cmd);
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgf32f7b3" class="outline-3">
+<h3 id="orgf32f7b3">Displaying Text</h3>
+<div class="outline-text-3" id="text-orgf32f7b3">
+<p>
+I have used the <a href="https://github.com/nopnop2002/esp-idf-ssd1306/blob/master/components/ssd1306/font8x8_basic.h">fonts</a> from the github repo mentioned above.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">display</span>(<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">text</span>){
+        <span style="font-weight: bold; text-decoration: underline;">esp_err_t</span> <span style="font-weight: bold; font-style: italic;">espRc</span>;
+        <span style="font-weight: bold; text-decoration: underline;">uint8_t</span> <span style="font-weight: bold; font-style: italic;">text_len</span> = strlen(text);
+        <span style="font-weight: bold; text-decoration: underline;">i2c_cmd_handle_t</span> <span style="font-weight: bold; font-style: italic;">cmd</span> = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS &lt;&lt; 1) | I2C_MASTER_WRITE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CONTROL_BYTE_CMD_STREAM, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_COLUMN_RANGE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x00, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x7F, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_PAGE_RANGE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x07, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+
+        i2c_master_stop(cmd);
+        espRc =i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+        <span style="font-weight: bold;">if</span> (espRc == ESP_OK) {
+                ESP_LOGI(tag, <span style="font-style: italic;">"OLED cc successfully"</span>);
+        } <span style="font-weight: bold;">else</span> {
+                ESP_LOGE(tag, <span style="font-style: italic;">"OLED cc failed. code: 0x%.2X"</span>, espRc);
+        }
+        i2c_cmd_link_delete(cmd);
+        <span style="font-weight: bold;">for</span>(<span style="font-weight: bold; text-decoration: underline;">uint16_t</span> <span style="font-weight: bold; font-style: italic;">i</span>=0;i&lt;text_len;i++){
+                cmd = i2c_cmd_link_create();
+                i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS &lt;&lt; 1) | I2C_MASTER_WRITE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CONTROL_BYTE_DATA_STREAM, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write(cmd, font8x8_basic_tr[(<span style="font-weight: bold; text-decoration: underline;">uint8_t</span>)text[i]], 8, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_stop(cmd);  
+        espRc =i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+                <span style="font-weight: bold;">if</span> (espRc == ESP_OK) {
+                        ESP_LOGI(tag, <span style="font-style: italic;">"OLED dd successfully"</span>);
+                        ESP_LOGI(tag, <span style="font-style: italic;">"%c"</span>,text[i]);
+                } <span style="font-weight: bold;">else</span> {
+                        ESP_LOGE(tag, <span style="font-style: italic;">"OLED ddfailed. code: 0x%.2X"</span>, espRc);
+                }
+    i2c_cmd_link_delete(cmd);
+        }
+
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org678e39c" class="outline-3">
+<h3 id="org678e39c">Clear Screen</h3>
+<div class="outline-text-3" id="text-org678e39c">
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">clearScreen</span>(){
+<span style="font-weight: bold; text-decoration: underline;">esp_err_t</span> <span style="font-weight: bold; font-style: italic;">espRc</span>;
+        <span style="font-weight: bold; text-decoration: underline;">i2c_cmd_handle_t</span> <span style="font-weight: bold; font-style: italic;">cmd</span> = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS &lt;&lt; 1) | I2C_MASTER_WRITE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CONTROL_BYTE_CMD_STREAM, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_COLUMN_RANGE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x00, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x7F, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CMD_SET_PAGE_RANGE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,0x07, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+
+        i2c_master_stop(cmd);
+        espRc =i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+        <span style="font-weight: bold;">if</span> (espRc == ESP_OK) {
+                ESP_LOGI(tag, <span style="font-style: italic;">"OLED cc successfully"</span>);
+        } <span style="font-weight: bold;">else</span> {
+                ESP_LOGE(tag, <span style="font-style: italic;">"OLED cc failed. code: 0x%.2X"</span>, espRc);
+        }
+        i2c_cmd_link_delete(cmd);
+        <span style="font-weight: bold;">for</span>(<span style="font-weight: bold; text-decoration: underline;">uint16_t</span> <span style="font-weight: bold; font-style: italic;">i</span>=0;i&lt;128;i++){
+                cmd = i2c_cmd_link_create();
+                i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS &lt;&lt; 1) | I2C_MASTER_WRITE, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        i2c_master_write_byte(cmd,OLED_CONTROL_BYTE_DATA_STREAM, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_write(cmd, font8x8_basic_tr[0], 8, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+
+        i2c_master_stop(cmd);  
+        espRc =i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+                <span style="font-weight: bold;">if</span> (espRc == ESP_OK) {
+                        ESP_LOGI(tag, <span style="font-style: italic;">"OLED cleared successfully"</span>);
+                } <span style="font-weight: bold;">else</span> {
+                        ESP_LOGE(tag, <span style="font-style: italic;">"OLED ddfailed. code: 0x%.2X"</span>, espRc);
+                }
+        i2c_cmd_link_delete(cmd);
+        }
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc8884b8" class="outline-2">
+<h2 id="orgc8884b8">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc8884b8">
+<p>
+There is only minimum code for getting up and running with oled display. For displaying Images you can refer the github repo.
+</p>
+</div>
+</div>
+</div>
+</body>
+</html>
