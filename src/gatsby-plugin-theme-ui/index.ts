@@ -18,12 +18,21 @@ const theme: Theme = {
     body: 1.5,
     heading: 1.125,
   },
+  config: {
+    initialColorModeName: 'light',
+  },
   colors: {
     text: '#000',
-    background: '#fff',
+    background: '#f0f0f0',
     primary: '#0d1321',
-    secondary: '#1d2d44',
-    muted: '#f0f0f0',
+    secondary: '#0e1317',
+    muted: '#ffffff',
+    modes: {
+      dark: {
+        text: '#fff',
+        background: '#1c2023',
+      },
+    },
   },
   text: {
     heading: {
@@ -36,7 +45,8 @@ const theme: Theme = {
   buttons: {
     primary: {
       backgroundColor: 'accent',
-      color: 'text',
+      color: 'muted',
+      padding: 2,
     },
   },
   styles: {
