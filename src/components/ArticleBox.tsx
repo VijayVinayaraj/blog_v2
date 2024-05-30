@@ -4,10 +4,12 @@ type ArticleBoxProps = {
   title: string
   description: string
   date: string
+  onClick: () => void
 }
-export const ArticleBox = ({ title, description, date }: ArticleBoxProps) => {
+export const ArticleBox = ({ title, description, date, onClick }: ArticleBoxProps) => {
   return (
     <Flex
+      onClick={onClick}
       sx={{
         flexDirection: 'column',
         gap: 2,
@@ -15,6 +17,7 @@ export const ArticleBox = ({ title, description, date }: ArticleBoxProps) => {
         border: '1px solid',
         p: 3,
         maxHeight: '200px',
+        cursor: 'pointer',
       }}
     >
       <Text as="h4" sx={{ fontWeight: 'blod' }}>

@@ -9,7 +9,14 @@ const App = ({ data }: PageProps<Queries.IndexPageQuery>) => {
   const articles = data.allSitePage.edges
   return (
     <Layout>
-      <Flex sx={{ justifyContent: 'center', flexDirection: 'column', alignItems: 'center' }}>
+      <Flex
+        sx={{
+          justifyContent: 'center',
+          flexDirection: 'column',
+          alignItems: 'center',
+          minHeight: '100vh',
+        }}
+      >
         <Text as="h2">Hi, I'm Vijay Vinayaraj</Text>
         <Text as="h3">Web Developer by Day/</Text>
         <Text as="h3"> Embedded Firmware Engineer by Night</Text>
@@ -22,6 +29,7 @@ const App = ({ data }: PageProps<Queries.IndexPageQuery>) => {
           marginX: 'auto',
           gap: 4,
           maxWidth: '500px',
+          marginBottom: 5,
         }}
       >
         {articles.map(({ node }) => {
@@ -29,7 +37,7 @@ const App = ({ data }: PageProps<Queries.IndexPageQuery>) => {
             <ArticleBox
               title={node.context?.title || ''}
               date={node.context?.date || ''}
-              description="Thisis test"
+              description={node.context?.description || ''}
             />
           )
         })}
@@ -54,6 +62,8 @@ export const query = graphql`
             id
             title
             date
+            description
+            keywords
           }
         }
       }

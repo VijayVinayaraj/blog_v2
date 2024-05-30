@@ -24,8 +24,8 @@ const theme: Theme = {
   colors: {
     text: '#000',
     background: '#f0f0f0',
-    primary: '#0d1321',
-    secondary: '#0e1317',
+    primary: 'backgound',
+    secondary: '#77e035g',
     muted: '#ffffff',
     modes: {
       dark: {
@@ -44,9 +44,19 @@ const theme: Theme = {
 
   buttons: {
     primary: {
-      backgroundColor: 'accent',
-      color: 'muted',
+      border: 'none',
+      color: 'text',
+    },
+    link: {
+      border: 'none',
+      color: 'text',
       padding: 2,
+      fontSize: 3,
+      fontWeight: 600,
+      cursor: 'pointer',
+      ':hover': {
+        textDecoration: 'underline',
+      },
     },
   },
   styles: {

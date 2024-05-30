@@ -8,10 +8,10 @@ export const Footer = () => {
       sx={{
         width: '100%',
         background: 'secondary',
-        gap: 3,
-        alignContent: 'center',
+        gap: 2,
+        alignItems: 'center',
         justifyContent: 'center',
-        height: '70px',
+        height: '50px',
         marginTop: 'auto',
       }}
     >
