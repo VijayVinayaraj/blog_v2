@@ -9,6 +9,8 @@ export type BlogPost = {
   id: string
   title: string
   date: Date
+  description: string
+  keywords: string
   contentHtml: ContentHTML
 }
 type ContentHTML = JSX.Element | string | JSX.Element[]
@@ -33,7 +35,8 @@ function extractBlogData(fileContent: string) {
   const $ = cheerio.load(sanitizedHtml)
   const title = $('.title').text()
   const dateString = $('.date').text()
-
+  const description = $('meta[name="description"]').attr('content')
+  const keywords = $('meta[name="keywords"]').attr('content')
   const dateRegex = /\d{4}-\d{2}-\d{2}/
   const extractedDate = dateString?.trim().match(dateRegex)
   let date = new Date()
@@ -43,6 +46,8 @@ function extractBlogData(fileContent: string) {
   return {
     title,
     date,
+    description,
+    keywords,
     contentHtml: sanitizedHtml,
   }
 }
@@ -59,6 +64,8 @@ export const createPages: GatsbyNode['createPages'] = async ({ actions }) => {
         id: post.id,
         title: post.title,
         date: post.date.toISOString(),
+        description: post.description,
+        keywords: post.keywords,
         contentHtml: post.contentHtml,
       },
     })
@@ -75,6 +82,8 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
       id: String
       title: String
       date: Date
+      description:String
+      keywords:String
       contentHtml: String
     }
   `)
