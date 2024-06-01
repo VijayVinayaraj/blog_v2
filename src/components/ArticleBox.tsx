@@ -7,6 +7,7 @@ type ArticleBoxProps = {
   onClick: () => void
 }
 export const ArticleBox = ({ title, description, date, onClick }: ArticleBoxProps) => {
+  const dateString = new Date(date)
   return (
     <Flex
       onClick={onClick}
@@ -21,7 +22,7 @@ export const ArticleBox = ({ title, description, date, onClick }: ArticleBoxProp
       }}
     >
       <Text as="h4" sx={{ fontWeight: 'blod' }}>
-        {date}
+        {dateString.toDateString()}
       </Text>
       <Text as="h2" sx={{ fontWeight: '900' }}>
         {title}

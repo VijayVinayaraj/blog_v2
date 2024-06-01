@@ -46,6 +46,7 @@ const theme: Theme = {
     primary: {
       border: 'none',
       color: 'text',
+      padding: 1,
     },
     link: {
       border: 'none',
@@ -89,16 +90,8 @@ const theme: Theme = {
       variant: 'text.heading',
       fontSize: 0,
     },
-    pre: {
-      fontFamily: 'monospace',
-      overflowX: 'auto',
-      code: {
-        color: 'inherit',
-      },
-    },
-    code: {
-      fontFamily: 'monospace',
-      fontSize: 'inherit',
+    a: {
+      color: '#4e6adc',
     },
     table: {
       width: '100%',
