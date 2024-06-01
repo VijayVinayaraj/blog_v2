@@ -2,6 +2,7 @@ import { Flex, Label, Switch, useColorMode } from 'theme-ui'
 
 export const ToggleTheme = () => {
   const [mode, setMode] = useColorMode()
+
   return (
     <Flex sx={{ marginRight: 5 }}>
       <Label htmlFor="toggle-theme-button"></Label>
@@ -9,7 +10,7 @@ export const ToggleTheme = () => {
         id="toggle-theme-button"
         sx={{
           'input:checked ~ &': {
-            backgroundColor: 'secondary',
+            backgroundColor: 'green',
           },
         }}
         label={mode === 'dark' ? 'light' : 'dark'}

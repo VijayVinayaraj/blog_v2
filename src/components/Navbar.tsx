@@ -1,11 +1,32 @@
 import React, { ReactNode, useState } from 'react'
-import { Box, Button, Close, Flex } from 'theme-ui'
+import { Box, Button, Close, Divider, Flex, Text } from 'theme-ui'
 import { NavCube } from './icon/NavCube'
 import { ToggleTheme } from './ToggleTheme'
-import { navigate } from 'gatsby'
+import { graphql, navigate, useStaticQuery } from 'gatsby'
 
 export const Navbar = ({ children }: { children: ReactNode }) => {
   const [open, setOpen] = useState<boolean>(false)
+  const data = useStaticQuery<Queries.NavBarQuery>(graphql`
+    query NavBar {
+      allSitePage(
+        limit: 5
+        sort: { context: { date: DESC } }
+        filter: { context: { id: { ne: null } } }
+      ) {
+        edges {
+          node {
+            context {
+              id
+              title
+            }
+            path
+          }
+        }
+      }
+    }
+  `)
+
+  const articles = data.allSitePage.edges
   return (
     <Box>
       <Box
@@ -17,6 +38,7 @@ export const Navbar = ({ children }: { children: ReactNode }) => {
           top: 0,
           left: 0,
           overflowX: 'hidden',
+          overflowY: 'hidden',
           transition: '0.5s',
           background: 'background',
         }}
@@ -29,7 +51,7 @@ export const Navbar = ({ children }: { children: ReactNode }) => {
           />
         </Flex>
         <Box as="nav">
-          <Flex sx={{ flexDirection: 'column', gap: 3, px: 3 }}>
+          <Flex sx={{ flexDirection: 'column', gap: 2, px: 3 }}>
             <Button
               variant="link"
               onClick={() => {
@@ -46,6 +68,29 @@ export const Navbar = ({ children }: { children: ReactNode }) => {
             >
               Blog
             </Button>
+            <Divider />
+
+            {articles.map(({ node }) => (
+              <Button
+                key={node.context?.id}
+                variant="link"
+                onClick={() => {
+                  navigate(node.path)
+                }}
+              >
+                <Text
+                  sx={{
+                    fontSize: 1,
+                    zIndex: 10,
+                    visibility: open ? 'visible' : 'hidden',
+                    transitionDelay: open ? '0.5s' : '0s',
+                    transitionProperty: 'visibility',
+                  }}
+                >
+                  {node.context?.title}
+                </Text>
+              </Button>
+            ))}
           </Flex>
         </Box>
       </Box>
@@ -60,7 +105,7 @@ export const Navbar = ({ children }: { children: ReactNode }) => {
         }}
       >
         <Button
-          sx={{ mx: 4, marginTop: 3, backgroundColor: 'background' }}
+          sx={{ mx: 4, marginTop: 3 }}
           onClick={() => {
             setOpen(true)
           }}
@@ -69,7 +114,7 @@ export const Navbar = ({ children }: { children: ReactNode }) => {
         </Button>
         <ToggleTheme />
       </Flex>
-      {children}
+      <Box sx={{ marginTop: 5 }}>{children}</Box>
     </Box>
   )
 }

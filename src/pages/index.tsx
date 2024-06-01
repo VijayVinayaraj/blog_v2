@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { graphql, type HeadFC, type PageProps } from 'gatsby'
+import { graphql, navigate, type HeadFC, type PageProps } from 'gatsby'
 import { Layout } from '../components/Layout'
 import { Flex, Text } from 'theme-ui'
 import { ArticleBox } from '../components/ArticleBox'
@@ -20,7 +20,9 @@ const App = ({ data }: PageProps<Queries.IndexPageQuery>) => {
         <Text as="h2">Hi, I'm Vijay Vinayaraj</Text>
         <Text as="h3">Web Developer by Day/</Text>
         <Text as="h3"> Embedded Firmware Engineer by Night</Text>
-        <Text>I'm passionate about developing technologies. Fasinated about C. </Text>
+        <Text sx={{ textAlign: 'center' }}>
+          I'm passionate about developing technologies. Fasinated about C.{' '}
+        </Text>
       </Flex>
 
       <Flex
@@ -35,6 +37,10 @@ const App = ({ data }: PageProps<Queries.IndexPageQuery>) => {
         {articles.map(({ node }) => {
           return (
             <ArticleBox
+              key={node.id}
+              onClick={() => {
+                navigate(node.path)
+              }}
               title={node.context?.title || ''}
               date={node.context?.date || ''}
               description={node.context?.description || ''}
@@ -58,6 +64,7 @@ export const query = graphql`
       edges {
         node {
           id
+          path
           context {
             id
             title

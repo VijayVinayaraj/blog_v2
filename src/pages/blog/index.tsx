@@ -13,12 +13,13 @@ const Blog = ({ data }: PageProps<Queries.BlogPageQuery>) => {
           marginX: 'auto',
           gap: 4,
           maxWidth: '500px',
-          marginY: 5,
+          marginY: 6,
         }}
       >
         {blogs.map(({ node }) => {
           return (
             <ArticleBox
+              key={node.id}
               onClick={() => {
                 navigate(node.path)
               }}
@@ -38,6 +39,7 @@ export const query = graphql`
     allSitePage(sort: { context: { date: DESC } }, filter: { context: { id: { ne: null } } }) {
       edges {
         node {
+          id
           path
           context {
             id
