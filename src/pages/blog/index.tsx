@@ -2,6 +2,7 @@ import { Link, PageProps, graphql, navigate } from 'gatsby'
 import { Layout } from '../../components/Layout'
 import { Flex } from 'theme-ui'
 import { ArticleBox } from '../../components/ArticleBox'
+import { Seo } from '../../components/Seo'
 
 const Blog = ({ data }: PageProps<Queries.BlogPageQuery>) => {
   const blogs = data.allSitePage.edges
@@ -54,3 +55,7 @@ export const query = graphql`
 `
 
 export default Blog
+
+export const Head = () => {
+  return <Seo title="Blogs" description="List of my blogs" />
+}

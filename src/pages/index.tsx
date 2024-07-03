@@ -4,6 +4,7 @@ import { Layout } from '../components/Layout'
 import { Flex, Text } from 'theme-ui'
 import { ArticleBox } from '../components/ArticleBox'
 import { Footer } from '../components/Footer'
+import { Seo } from '../components/Seo'
 
 const App = ({ data }: PageProps<Queries.IndexPageQuery>) => {
   const articles = data.allSitePage.edges
@@ -53,6 +54,10 @@ const App = ({ data }: PageProps<Queries.IndexPageQuery>) => {
   )
 }
 export default App
+
+export const Head = () => {
+  return <Seo />
+}
 
 export const query = graphql`
   query IndexPage {

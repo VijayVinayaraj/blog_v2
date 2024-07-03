@@ -1,4 +1,4 @@
-import { PageProps } from 'gatsby'
+import { HeadProps, PageProps, graphql } from 'gatsby'
 import React from 'react'
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -16,9 +16,12 @@ import parse, {
   DOMNode,
   attributesToProps,
 } from 'html-react-parser'
-import { Box, Flex, Link, Text, useThemeUI } from 'theme-ui'
+import { Flex, Link, useThemeUI } from 'theme-ui'
 import { Layout } from '../components/Layout'
 import { CopyButton } from '../components/CopyButton'
+import { GatsbyImage, getImage } from 'gatsby-plugin-image'
+import { BlogPost } from '../../gatsby-node'
+import { Seo } from '../components/Seo'
 
 SyntaxHighlighter.registerLanguage('c', c)
 SyntaxHighlighter.registerLanguage('typescript', typescript)
@@ -27,19 +30,16 @@ SyntaxHighlighter.registerLanguage('python', python)
 SyntaxHighlighter.registerLanguage('bash', bash)
 SyntaxHighlighter.registerLanguage('cpp', cpp)
 
-export type BlogPost = {
-  id: string
-  title: string
-  date: Date
-  contentHtml: ContentHTML
-}
-type ContentHTML = string
-
-export default function BlogPage({ pageContext }: PageProps<{}, BlogPost>) {
-  const { title, date, contentHtml } = pageContext
+export default function BlogPage({
+  data,
+  pageContext,
+}: PageProps<Queries.BlogPostQuery, BlogPost>) {
+  const { date, contentHtml } = pageContext
   const dateString = new Date(date).toISOString()
 
   const { colorMode } = useThemeUI()
+
+  const imageDataEdges = data.allFile.edges
 
   const options: HTMLReactParserOptions = {
     replace(domNode) {
@@ -72,20 +72,23 @@ export default function BlogPage({ pageContext }: PageProps<{}, BlogPost>) {
       }
       if (domNodeWithType.name == 'a') {
         const prop = attributesToProps(domNodeWithType.attribs)
-        return <Link {...prop}>{domToReact(domNodeWithType.children as DOMNode[], options)}</Link>
+        return (
+          <Link {...prop} target="_blank">
+            {domToReact(domNodeWithType.children as DOMNode[], options)}
+          </Link>
+        )
       }
       if (domNodeWithType.name === 'img') {
-        return (
-          <Box
-            as="img"
-            sx={{
-              maxWidth: '100%',
-              height: 'auto',
-              margin: '0 auto',
-              display: 'block',
-            }}
-          />
-        )
+        const src = domNodeWithType.attribs.src
+        const alt = domNodeWithType.attribs.alt
+        const fileName = src.split('/').pop()
+        const imageData = imageDataEdges.find(({ node }) => node.relativePath == fileName)
+
+        if (imageData != null) {
+          const image = getImage(imageData?.node.childImageSharp)
+
+          return image && <GatsbyImage image={image} alt={alt} />
+        }
       }
 
       // Continue parsing other elements normally
@@ -101,3 +104,24 @@ export default function BlogPage({ pageContext }: PageProps<{}, BlogPost>) {
     </Layout>
   )
 }
+
+export const Head = ({ pageContext }: HeadProps<{}, BlogPost>) => {
+  const { title, description } = pageContext
+  return <Seo title={title} description={description} />
+}
+
+export const pageQuery = graphql`
+  query BlogPost($images: [String]) {
+    allFile(filter: { relativePath: { in: $images } }) {
+      edges {
+        node {
+          id
+          relativePath
+          childImageSharp {
+            gatsbyImageData
+          }
+        }
+      }
+    }
+  }
+`
