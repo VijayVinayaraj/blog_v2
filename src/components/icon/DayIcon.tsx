@@ -1,17 +1,8 @@
 export const DayIcon = () => {
   return (
-    <svg
-      fill="#000000"
-      width="25px"
-      height="25px"
-      viewBox="0 0 512 512"
-      version="1.1"
-      xml:space="preserve"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
-    >
-      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-      <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+    <svg fill="yellow" width="60px" height="60px" viewBox="0 0 512 512" version="1.1">
+      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+      <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
       <g id="SVGRepo_iconCarrier">
         {' '}
         <g id="_x39_77_x2C__sun_x2C__day_x2C__light">
