@@ -2,15 +2,36 @@ import type { GatsbyConfig } from 'gatsby'
 
 const config: GatsbyConfig = {
   siteMetadata: {
-    title: `Blog`,
-    siteUrl: `https://www.yourdomain.tld`,
+    title: `Vijay Vinayaraj`,
+    description: `Web developer/Embedded developer. Lets explore both worlds`,
+    image: `./images/favicon.png`,
+    siteUrl: `https://vijayvinayaraj.netlify.app/`,
   },
-  // More easily incorporate content into your pages through automatic TypeScript type generation and better GraphQL IntelliSense.
-  // If you use VSCode you can also use the GraphQL plugin
-  // Learn more at: https://gatsby.dev/graphql-typegen
+
   graphqlTypegen: true,
   plugins: [
     'gatsby-plugin-theme-ui',
+    `gatsby-plugin-image`,
+
+    {
+      resolve: `gatsby-plugin-sharp`,
+      options: {
+        defaults: {
+          formats: [`auto`, `webp`],
+          placeholder: `dominantColor`,
+          quality: 50,
+          breakpoints: [750, 1080, 1366, 1920],
+          backgroundColor: `transparent`,
+          tracedSVGOptions: {},
+          blurredOptions: {},
+          jpgOptions: {},
+          pngOptions: {},
+          webpOptions: {},
+          avifOptions: {},
+        },
+      },
+    },
+    `gatsby-transformer-sharp`, // Needed for dynamic images
     {
       resolve: `gatsby-source-filesystem`,
       options: {
@@ -18,6 +39,13 @@ const config: GatsbyConfig = {
         name: `pages`,
         // Path to the directory
         path: `${__dirname}/content/`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `images`,
+        path: `${__dirname}/src/images/`,
       },
     },
   ],

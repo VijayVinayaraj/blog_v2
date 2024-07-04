@@ -11,9 +11,9 @@ export type BlogPost = {
   date: Date
   description: string
   keywords: string
-  contentHtml: ContentHTML
+  imageFilenames: string[]
+  contentHtml: string
 }
-type ContentHTML = JSX.Element | string | JSX.Element[]
 
 function getSortedPostsData() {
   const fileNames = fs.readdirSync(postsDirectory)
@@ -38,6 +38,17 @@ function extractBlogData(fileContent: string) {
   const description = $('meta[name="description"]').attr('content')
   const keywords = $('meta[name="keywords"]').attr('content')
   const dateRegex = /\d{4}-\d{2}-\d{2}/
+
+  const imageFilenames = $('img')
+    .map(function () {
+      return $(this).attr('src')?.split('/').pop()
+    })
+    .get()
+
+  $('img').each(function () {
+    $(this).parent('p').contents().unwrap()
+  })
+
   const extractedDate = dateString?.trim().match(dateRegex)
   let date = new Date()
   if (extractedDate && extractedDate[0]) {
@@ -48,7 +59,8 @@ function extractBlogData(fileContent: string) {
     date,
     description,
     keywords,
-    contentHtml: sanitizedHtml,
+    imageFilenames: imageFilenames,
+    contentHtml: DOMPurify.sanitize($.html(), { USE_PROFILES: { html: true } }),
   }
 }
 
@@ -66,6 +78,7 @@ export const createPages: GatsbyNode['createPages'] = async ({ actions }) => {
         date: post.date.toISOString(),
         description: post.description,
         keywords: post.keywords,
+        images: post.imageFilenames,
         contentHtml: post.contentHtml,
       },
     })
@@ -77,13 +90,14 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
   createTypes(`
     type SitePage implements Node {
       context: Context
-    }
+  }
     type Context {
       id: String
       title: String
       date: Date
       description:String
-      keywords:String
+  keywords:String
+  images:[String]
       contentHtml: String
     }
   `)
