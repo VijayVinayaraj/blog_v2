@@ -48,6 +48,7 @@ const theme: Theme = {
       border: 'none',
       color: 'text',
       padding: 1,
+      cursor: 'pointer',
     },
     link: {
       border: 'none',
