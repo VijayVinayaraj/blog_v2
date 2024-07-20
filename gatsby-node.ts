@@ -13,8 +13,6 @@ export type BlogPost = {
   keywords: string
   imageFilenames: string[]
   contentHtml: string
-  prev: { id: string; title: string }
-  next: { id: string; title: string }
 }
 
 function getSortedPostsData() {
@@ -36,7 +34,7 @@ function extractBlogData(fileContent: string) {
   const sanitizedHtml = DOMPurify.sanitize(fileContent, { USE_PROFILES: { html: true } })
   const $ = cheerio.load(sanitizedHtml)
   const title = $('.title').text()
-  const dateString = $('p.date').text()
+  const dateString = $('.date').text()
   const description = $('meta[name="description"]').attr('content')
   const keywords = $('meta[name="keywords"]').attr('content')
   const dateRegex = /\d{4}-\d{2}-\d{2}/
@@ -50,7 +48,7 @@ function extractBlogData(fileContent: string) {
   $('img').each(function () {
     $(this).parent('p').contents().unwrap()
   })
-  $('p.date').remove()
+
   const extractedDate = dateString?.trim().match(dateRegex)
   let date = new Date()
   if (extractedDate && extractedDate[0]) {
@@ -70,7 +68,7 @@ export const createPages: GatsbyNode['createPages'] = async ({ actions }) => {
   const { createPage } = actions
   const posts = getSortedPostsData()
 
-  posts.forEach((post, index) => {
+  posts.forEach((post) => {
     createPage({
       path: `/blog/${post.id}`,
       component: path.resolve(`./src/templates/BlogPage.tsx`),
@@ -82,11 +80,6 @@ export const createPages: GatsbyNode['createPages'] = async ({ actions }) => {
         keywords: post.keywords,
         images: post.imageFilenames,
         contentHtml: post.contentHtml,
-        prev: index == 0 ? null : { id: posts[index - 1].id, title: posts[index - 1].title },
-        next:
-          index == posts.length - 1
-            ? null
-            : { id: posts[index + 1].id, title: posts[index + 1].title },
       },
     })
   })
@@ -98,22 +91,14 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
     type SitePage implements Node {
       context: Context
   }
-
-  type ContextLink {
-  id:String
-  title:String
-  }
-  
     type Context {
-      id: String!
-      title: String!
-      date: Date!
+      id: String
+      title: String
+      date: Date
       description:String
   keywords:String
   images:[String]
-  contentHtml: String!
-  prev:ContextLink 
-  next: ContextLink
+      contentHtml: String
     }
   `)
 }

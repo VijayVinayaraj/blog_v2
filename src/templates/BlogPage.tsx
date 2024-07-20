@@ -1,4 +1,4 @@
-import { HeadProps, Link, PageProps, graphql, navigate } from 'gatsby'
+import { HeadProps, PageProps, graphql } from 'gatsby'
 import React from 'react'
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -16,12 +16,11 @@ import parse, {
   DOMNode,
   attributesToProps,
 } from 'html-react-parser'
-import { Flex, Link as ALink, useThemeUI, Button, Text, Box } from 'theme-ui'
+import { Flex, Link, useThemeUI } from 'theme-ui'
 import { Layout } from '../components/Layout'
 import { CopyButton } from '../components/CopyButton'
 import { GatsbyImage, getImage } from 'gatsby-plugin-image'
 import { BlogPost } from '../../gatsby-node'
-import { NavigationButtons } from '../components/NavigationButtons'
 
 SyntaxHighlighter.registerLanguage('c', c)
 SyntaxHighlighter.registerLanguage('typescript', typescript)
@@ -33,13 +32,9 @@ SyntaxHighlighter.registerLanguage('cpp', cpp)
 export default function BlogPage({
   data,
   pageContext,
-}: PageProps<Queries.BlogPostQuery, Queries.Context>) {
-  const { date, contentHtml, prev, next } = pageContext
-  const dateString = new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+}: PageProps<Queries.BlogPostQuery, BlogPost>) {
+  const { date, contentHtml } = pageContext
+  const dateString = new Date(date).toISOString()
 
   const { colorMode } = useThemeUI()
 
@@ -77,9 +72,9 @@ export default function BlogPage({
       if (domNodeWithType.name == 'a') {
         const prop = attributesToProps(domNodeWithType.attribs)
         return (
-          <ALink {...prop} target="_blank">
+          <Link {...prop} target="_blank">
             {domToReact(domNodeWithType.children as DOMNode[], options)}
-          </ALink>
+          </Link>
         )
       }
       if (domNodeWithType.name === 'img') {
@@ -95,19 +90,16 @@ export default function BlogPage({
         }
       }
 
+      // Continue parsing other elements normally
       return domNodeWithType
     },
   }
 
   return (
     <Layout>
-      <Box sx={{ marginX: [2, 7] }}>
-        <Text as="h3">Date: {dateString}</Text>
-        <Flex sx={{ justifyContent: 'center', flexWrap: 'wrap' }}>
-          {parse(contentHtml, options)}
-        </Flex>
-        <NavigationButtons next={next} prev={prev} />
-      </Box>
+      <Flex sx={{ justifyContent: 'center', flexWrap: 'wrap', marginX: [2, 7] }}>
+        {parse(contentHtml, options)}
+      </Flex>
     </Layout>
   )
 }
