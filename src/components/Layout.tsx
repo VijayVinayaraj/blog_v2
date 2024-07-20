@@ -1,11 +1,10 @@
 import { ReactNode } from 'react'
-import { Box, Flex, Switch, useColorMode } from 'theme-ui'
-import { ToggleTheme } from './ToggleTheme'
+import { Box } from 'theme-ui'
 import { Navbar } from './Navbar'
 
 export const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <Box>
+    <Box sx={{ marginBottom: 5 }}>
       <Navbar>{children}</Navbar>
     </Box>
   )
